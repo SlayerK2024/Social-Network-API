@@ -1,19 +1,50 @@
 const express = require('express');
 const router = express.Router();
-const ThoughtController = require('../../controllers/thoughtController');
+const mongoose = require('mongoose');
 
-router.get('/', ThoughtController.getAllThoughts);
+const {
+  getAllThoughts,
+  getThoughtById,
+  createThought,
+  updateThought,
+  deleteThought,
+  createReaction,
+  deleteReaction,
+} = require('../../controllers/thoughtController');
 
-router.get('/:thoughtId', ThoughtController.getThoughtById);
+// Middleware to validate ObjectId
+function validateObjectId(req, res, next) {
+  const { id, thoughtId, reactionId } = req.params;
+  
+  if (id && !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).send('Invalid thought ID');
+  }
+  if (thoughtId && !mongoose.Types.ObjectId.isValid(thoughtId)) {
+    return res.status(400).send('Invalid thought ID');
+  }
+  if (reactionId && !mongoose.Types.ObjectId.isValid(reactionId)) {
+    return res.status(400).send('Invalid reaction ID');
+  }
+  next();
+}
 
-router.post('/', ThoughtController.createThought);
+// Apply validation middleware
+router.use('/:id', validateObjectId);
+router.use('/:thoughtId/reactions/:reactionId', validateObjectId);
 
-router.put('/:thoughtId', ThoughtController.updateThought);
+router.route('/')
+  .get(getAllThoughts)
+  .post(createThought);
 
-router.delete('/:thoughtId', ThoughtController.deleteThought);
+router.route('/:id')
+  .get(getThoughtById)
+  .put(updateThought)
+  .delete(deleteThought);
 
-router.post('/:thoughtId/reactions', ThoughtController.createReaction);
+router.route('/:thoughtId/reactions')
+  .post(createReaction);
 
-router.delete('/:thoughtId/reactions/:reactionId', ThoughtController.deleteReaction);
+router.route('/:thoughtId/reactions/:reactionId')
+  .delete(deleteReaction);
 
 module.exports = router;

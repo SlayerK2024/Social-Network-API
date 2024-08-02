@@ -1,19 +1,46 @@
 const express = require('express');
 const router = express.Router();
-const UserController = require('../../controllers/userController');
+const mongoose = require('mongoose');
 
-router.get('/', UserController.getAllUsers);
+const {
+  getAllUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+  addFriend,
+  removeFriend,
+} = require('../../controllers/userController');
 
-router.get('/:id', UserController.getUserById);
+// Validate ObjectId format
+function validateObjectId(req, res, next) {
+  const { id, userId, friendId } = req.params;
+  if (id && !mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).send('Invalid user ID');
+  }
+  if (userId && !mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).send('Invalid user ID');
+  }
+  if (friendId && !mongoose.Types.ObjectId.isValid(friendId)) {
+    return res.status(400).send('Invalid friend ID');
+  }
+  next();
+}
 
-router.post('/', UserController.createUser);
+router.use('/:id', validateObjectId);
+router.use('/:userId/friends/:friendId', validateObjectId);
 
-router.put('/:id', UserController.updateUser);
+router.route('/')
+  .get(getAllUsers)
+  .post(createUser);
 
-router.delete('/:id', UserController.deleteUser);
+router.route('/:id')
+  .get(getUserById)
+  .put(updateUser)
+  .delete(deleteUser);
 
-router.post('/:userId/friends/:friendId', UserController.addFriend);
-
-router.delete('/:userId/friends/:friendId', UserController.removeFriend);
+router.route('/:userId/friends/:friendId')
+  .post(addFriend)
+  .delete(removeFriend);
 
 module.exports = router;
