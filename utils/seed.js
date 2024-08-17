@@ -1,44 +1,41 @@
 const mongoose = require('mongoose');
-const { User, Thought } = require('../models'); // Ensure models are correctly imported
-const { users, thoughts } = require('./data'); // Ensure seed data is correctly imported
+const bcrypt = require('bcryptjs'); 
+const { users, thoughts } = require('./data');
+const User = require('../models/User'); 
+const Thought = require('../models/Thought'); 
+// Database connection
+mongoose.connect('mongodb://localhost:27017/socialNetworkDB', { 
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error('MongoDB connection error:', err));
 
-
-// Handle connection errors
-mongoose.connection.on('error', (err) => console.error(err));
-
-mongoose.connection.once('open', async () => {
-  console.log('Connected to the database');
-
+// Hash user passwords and seed the database
+const seedDatabase = async () => {
   try {
-    // Drop collections if they exist
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    for (const collection of collections) {
-      await mongoose.connection.db.dropCollection(collection.name);
-      console.log(`Dropped collection: ${collection.name}`);
+    await User.deleteMany({});
+    await Thought.deleteMany({});
+
+    // Hash passwords and create users
+    for (const userData of users) {
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const user = new User({
+        ...userData,
+        password: hashedPassword
+      });
+      await user.save();
     }
 
-    // Create user data with hashed passwords
-    const hashedUsers = await Promise.all(users.map(async (user) => {
-      const newUser = new User(user);
-      await newUser.setPassword(user.password); // Hash the password
-      return newUser.save();
-    }));
+    // Create thoughts
+    await Thought.insertMany(thoughts);
 
-    console.log(`Inserted ${hashedUsers.length} users`);
-
-    // Insert thoughts
-    const thoughtData = await Thought.create(thoughts);
-    console.log(`Inserted ${thoughtData.length} thoughts`);
-
-    // Log out the seed data to indicate what should appear in the database
-    console.table(users);
-    console.table(thoughts);
-    console.info('Seeding complete! 🌱');
-
-  } catch (err) {
-    console.error('Error during seeding:', err);
+    console.log('Database seeded successfully');
+  } catch (error) {
+    console.error('Error seeding database:', error);
   } finally {
-    // Close the connection and exit
-    mongoose.connection.close(() => process.exit(0));
+    mongoose.connection.close();
   }
-});
+};
+
+seedDatabase();
+
+

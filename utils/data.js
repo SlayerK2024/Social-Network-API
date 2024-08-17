@@ -1,36 +1,48 @@
 // Sample user data
+const bcrypt = require('bcryptjs');
+
 const users = [
     {
-      username: 'Kyna',
+      username: 'kyna_po',
       email: 'kyna@example.com',
       password: 'password123',
+      thoughts: [],
+      friends: []
     },
     {
-      username: 'Tanjiro',
+      username: 'tanjiro_kum',
       email: 'tanjiro@example.com',
-      password: 'password456',
+      password: 'password123',
+      thoughts: [],
+      friends: []
     },
     {
-    username: 'Luffy',
-      email: 'luffyo@example.com',
-      password: 'password789',
-    }
+      username: 'luffy_dmo',
+      email: 'luffy@example.com',
+      password: 'password123',
+      thoughts: [],
+      friends: []
+      }
   ];
+  
   
   // Sample thought data
   const thoughts = [
     {
+      username: 'kyna_po',
       thoughtText: 'This is Kyna\'s first thought!',
-      username: 'Kyna',
+      reactions: []
     },
     {
-      thoughtText: 'This is Tanjiro\'s second thought!',
-      username: 'Tanjiro',
+      username: 'tanjiro_kum',
+     thoughtText: 'This is Tanjiro\'s second thought!',
+      reactions: []
     },
     {
-        thoughtText: 'This is Luffy\'s last thought!',
-        username: 'Luffy',
-      }
+    username: 'luffy_dmo',
+    thoughtText: 'This is Luffy\'s last thought!',
+    reactions: []
+    }
   ];
-  
+
   module.exports = { users, thoughts };

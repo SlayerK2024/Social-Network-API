@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { format } = require('date-fns');
 const Schema = mongoose.Schema;
 
 // Define Reaction Schema
@@ -19,7 +20,7 @@ const reactionSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    get: (timestamp) => dateFormat(timestamp)  
+    get: (timestamp) => format(timestamp, 'yyyy-MM-dd HH:mm:ss')  
   }
 }, { _id: false }); 
 
@@ -34,19 +35,22 @@ const thoughtSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    get: (timestamp) => dateFormat(timestamp)  
+    get: (timestamp) => format(timestamp, 'yyyy-MM-dd HH:mm:ss')  
   },
   username: {
     type: String,
     required: true
   },
   reactions: [reactionSchema]  
-}, {timestamps: true }); 
+}, { timestamps: true }); 
 
 // Virtual for reaction count
 thoughtSchema.virtual('reactionCount').get(function() {
   return this.reactions.length;
 });
+
+// Include virtuals in JSON
+thoughtSchema.set('toJSON', { virtuals: true });
 
 // Export the Thought model
 module.exports = mongoose.model('Thought', thoughtSchema);
